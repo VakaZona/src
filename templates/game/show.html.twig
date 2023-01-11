@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+Game - {{ game }}
+{% endblock %}
+
+{% block body %}
+    <h2>{{ game }} Game</h2>
+
+    {% if comments|length > 0 %}
+        <div>There are {{ comments|length }} comments.</div>
+        {% for comment in comments %}
+            {% if comment.photoFilename %}
+                <img src="{{ asset('uploads/photos/' ~ comment.photoFilename) }}"/>
+            {% endif %}
+
+            <h4>{{ comment.author }}</h4>
+            <small>
+                {{ comment.createdAt|format_datetime('medium', 'short') }}
+            </small>
+
+            <p>
+                {{ comment.text }}
+            </p>
+        {% endfor %}
+
+        {% if previous>=0 %}
+            <a href="{{ path('game', {id: game.id, offset: previous}) }}">Previous</a>
+        {% endif %}
+
+        {% if next<comments|length %}
+            <a href="{{ path('game', {id: game.id, offset: next}) }}">Next</a>
+        {% endif %}
+
+    {% else %}
+        <div>No comments have been posted yet for this Game.</div>
+    {% endif %}
+{% endblock %}
+
+

@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Games {% endblock %}
+
+{% block body %}
+    <h2>Give your comment!</h2>
+
+    {% for game in games %}
+        <h4>{{ game }}</h4>
+        <p>
+            <a href="{{ path('game', {'id': game.id}) }}">View</a>
+        </p>
+    {% endfor %}
+{% endblock %}
