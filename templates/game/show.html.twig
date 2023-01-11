@@ -25,16 +25,20 @@ Game - {{ game }}
         {% endfor %}
 
         {% if previous>=0 %}
-            <a href="{{ path('game', {id: game.id, offset: previous}) }}">Previous</a>
+            <a href="{{ path('game', {'slug': game.slug, offset: previous}) }}">Previous</a>
         {% endif %}
 
         {% if next<comments|length %}
-            <a href="{{ path('game', {id: game.id, offset: next}) }}">Next</a>
+            <a href="{{ path('game', {'slug': game.slug, offset: next}) }}">Next</a>
         {% endif %}
 
     {% else %}
         <div>No comments have been posted yet for this Game.</div>
     {% endif %}
+
+    <h2>Add your comment!</h2>
+    {{ form(comment_form) }}
+
 {% endblock %}
 
 

@@ -3,12 +3,12 @@
 {% block title %}Games {% endblock %}
 
 {% block body %}
-    <h2>Give your comment!</h2>
+    <h2></h2>
 
     {% for game in games %}
         <h4>{{ game }}</h4>
         <p>
-            <a href="{{ path('game', {'id': game.id}) }}">View</a>
+            <a href="{{ path('game', {'slug': game.slug}) }}">View</a>
         </p>
     {% endfor %}
 {% endblock %}
