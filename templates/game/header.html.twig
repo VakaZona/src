@@ -1,0 +1,6 @@
+{% for game in games %}
+        <a class="nav-conference" href="{{ path('game', { slug: game.slug }) }}">
+                {{ game }}
+        </a>
+{% endfor %}
+

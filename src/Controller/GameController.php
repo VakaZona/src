@@ -17,14 +17,17 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Notifier\Notification\Notification;
+use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 class GameController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private MessageBusInterface $bus,
-    ) {
+        private MessageBusInterface    $bus,
+    )
+    {
     }
 
     #[Route('/', name: 'homepage')]
@@ -32,14 +35,15 @@ class GameController extends AbstractController
     {
         return $this->render('game/index.html.twig', [
             'games' => $gameRepository->findAll(),
-        ]);
+        ])->setSharedMaxAge(3600);
     }
 
     #[Route('/game/{slug}', name: 'game')]
     public function show(
-        Request $request,
-        Game $game,
-        CommentRepository $commentRepository,
+        Request                           $request,
+        Game                              $game,
+        CommentRepository                 $commentRepository,
+        NotifierInterface                 $notifier,
         #[Autowire('%photo_dir%')] string $photoDir,
     ): Response
     {
@@ -49,8 +53,8 @@ class GameController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $comment->setGame($game);
 
-            if ($photo = $form['photo']->getData()){
-                $filename = bin2hex(random_bytes(6)).'.'.$photo->guessExtension();
+            if ($photo = $form['photo']->getData()) {
+                $filename = bin2hex(random_bytes(6)) . '.' . $photo->guessExtension();
                 try {
                     $photo->move($photoDir, $filename);
                 } catch (FileException $e) {
@@ -70,7 +74,13 @@ class GameController extends AbstractController
             ];
             $this->bus->dispatch(new CommentMessage($comment->getId(), $context));
 
+            $notifier->send(new Notification('Thank you for the feedback; your comment will be posted after moderation.', ['browser']));
+
             return $this->redirectToRoute('game', ['slug' => $game->getSlug()]);
+        }
+
+        if ($form->isSubmitted()) {
+            $notifier->send(new Notification('Can you check your submission? There are some problems with it.', ['browser']));
         }
 
         $offset = max(0, $request->query->getInt('offset', 0));
@@ -81,6 +91,14 @@ class GameController extends AbstractController
             'previous' => $offset - CommentRepository::PAGINATOR_PER_PAGE,
             'next' => min(count($paginator), $offset + CommentRepository::PAGINATOR_PER_PAGE),
             'comment_form' => $form,
-            ]);
+        ]);
+    }
+
+    #[Route('/game_header', name: 'game_header')]
+    public function conferenceHeader(GameRepository $gameRepository): Response
+    {
+        return $this->render('game/header.html.twig', [
+            'games' => $gameRepository->findAll(),
+        ])->setSharedMaxAge(3600);
     }
 }
